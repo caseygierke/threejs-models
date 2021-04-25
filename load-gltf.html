@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset=utf-8>
+        <title>Three.js Intro</title>
+    </head>
+    <body>
+        <canvas id="3d-canvas" width="800" height="600"></canvas>
+        <script src="js/build/three.js"></script>
+        <script src="js/examples/js/loaders/GLTFLoader.js"></script>
+        <script>
+
+var scene, camera, glRenderer;
+var wallMesh, postMesh;
+
+// Called on success loading of a GLTF file
+function loadedGLTF(gltf) {
+    var canvas = document.getElementById('3d-canvas');
+
+    // Add the loaded scene
+    scene.add(gltf.scene);
+
+    // Enable Shadows
+    gltf.scene.traverse(function (child) {
+        if (child instanceof THREE.Mesh) {
+            child.castShadow = true;
+            child.receiveShadow = true;
+        }
+    });
+
+    // Load the camera from the file
+    camera = gltf.cameras[0];
+    camera.aspect = canvas.width / canvas.height;
+    camera.updateProjectionMatrix();
+
+    // Load the template models
+    postMesh = gltf.scene.getObjectByName('Post');
+    wallMesh = gltf.scene.getObjectByName('Wall_5');
+
+    // Create a scene by cloning the templates
+    var p1 = postMesh.clone();
+    p1.position.set(0, 0, 0);
+    scene.add(p1);
+
+    var w1 = wallMesh.clone();
+    w1.position.set(0, 0, 0);
+    scene.add(w1);
+
+    var p2 = postMesh.clone();
+    p2.position.set(5, 0, 0);
+    scene.add(p2);
+
+    var w2 = wallMesh.clone();
+    w2.position.set(5, 0, 0);
+    w2.rotateY(Math.PI/2);
+    scene.add(w2);
+
+    var p3 = postMesh.clone();
+    p3.position.set(5, 0, -5);
+    scene.add(p3);
+
+    var w3 = wallMesh.clone();
+    w3.position.set(5, 0, -5);
+    w3.rotateY(Math.PI);
+    scene.add(w3);
+
+    var p4 = postMesh.clone();
+    p4.position.set(0, 0, -5);
+    scene.add(p4);
+}
+
+function init() {
+    var canvas = document.getElementById('3d-canvas');
+
+    // Create the scene
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x444444);
+
+    // Create the WebGLRenderer
+    glRenderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+    glRenderer.shadowMap.enabled = true;
+
+    // Create the lights
+    var ambient = new THREE.AmbientLight(0x333333);
+    scene.add(ambient);
+
+    var pointLight = new THREE.PointLight(0xffffff, 1);
+    pointLight.position.set(2, 4, -2);
+    pointLight.castShadow = true;
+    scene.add(pointLight);
+
+    // Load GLTF file
+    // The loader takes the name of the file and callbacks
+    // for success, in progress and error.
+    var loader = new THREE.GLTFLoader();
+    loader.load('./static/cartoon_lowpoly_small_city_free_pack/scene.gltf', loadedGLTF,
+                                          undefined,
+                                          function (e) {
+                                            console.error(e);
+                                          } );
+}
+
+// update() is called every frame.
+function update () {
+    glRenderer.render( scene, camera );
+
+    requestAnimationFrame( update );
+}
+
+init();
+update();
+
+        </script>
+    </body>
+</html>

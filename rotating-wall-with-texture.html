@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset=utf-8>
+        <title>Three.js Intro</title>
+    </head>
+    <body>
+        <canvas id="3d-canvas" width="800" height="600"></canvas>
+        <script src="js/build/three.js"></script>
+        <script src="js/examples/js/loaders/GLTFLoader.js"></script>
+        <script>
+
+var scene, camera, glRenderer;
+var boxMesh;
+
+function init() {
+    var canvas = document.getElementById('3d-canvas');
+
+    var floorWidth = 20;
+    var floorHeight = 40;
+
+    var boxWidth = 7;
+    var boxHeight = 2;
+
+    // Create the scene
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x444444);
+
+    // Create the camera
+    var fov = 100;
+    var aspectRatio = canvas.width / canvas.height;
+    var nearPlane = 0.1;
+    var farPlane = 100;
+    camera = new THREE.PerspectiveCamera( fov, aspectRatio, nearPlane, farPlane );
+
+    // Create the WebGLRenderer
+    glRenderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+
+    // Load Textures
+    var textureLoader = new THREE.TextureLoader();
+
+    var grass = textureLoader.load( './static/grass1.png' );
+    grass.wrapS = THREE.RepeatWrapping;
+    grass.wrapT = THREE.RepeatWrapping;
+    grass.repeat.set( floorWidth/2, floorHeight/2 );
+
+    var stone = textureLoader.load( './static/stone wall 4.png' );
+    stone.wrapS = THREE.RepeatWrapping;
+    stone.wrapT = THREE.RepeatWrapping;
+    stone.repeat.set( boxWidth/2, boxHeight/2 );
+
+    // Create the floor
+    var floorGeometry = new THREE.PlaneGeometry(floorWidth, floorHeight);
+    var floorMaterial = new THREE.MeshStandardMaterial( { map: grass,
+                                                          metalness: 0.25,
+                                                          roughness: 0.75 } );
+    var floorMesh = new THREE.Mesh(floorGeometry, floorMaterial);
+
+    floorMesh.position.set( 0, -1, -3 );
+    floorMesh.rotation.set(-Math.PI/2, 0, 0 );
+
+    scene.add(floorMesh);
+
+    // Create a box
+    var boxDepth = 0.2;
+    var boxGeometry = new THREE.BoxGeometry(boxWidth, boxHeight, boxDepth);
+    var boxMaterial = new THREE.MeshStandardMaterial( { map: stone,
+                                                        metalness: 0,
+                                                        roughness: 1 } );
+    boxMesh = new THREE.Mesh(boxGeometry, boxMaterial);
+
+    boxMesh.position.set(0, 1, -5);
+
+    scene.add(boxMesh);
+
+    // Add the Lights
+    var ambient = new THREE.AmbientLight(0x333333);
+    scene.add(ambient);
+
+    var pointLight = new THREE.PointLight(0xffffff, 1);
+    pointLight.position.set(2, 4, -2);
+    scene.add(pointLight);
+
+    // Enable Shadows
+    glRenderer.shadowMap.enabled = true;
+
+    floorMesh.receiveShadow = true;
+
+    boxMesh.receiveShadow = true;
+    boxMesh.castShadow = true;
+
+    pointLight.castShadow = true;
+}
+
+// update() is called every frame.
+function update () {
+    boxMesh.rotateY(Math.PI/1000);
+
+    glRenderer.render( scene, camera );
+
+    requestAnimationFrame( update );
+}
+
+init();
+update();
+
+        </script>
+    </body>
+</html>
